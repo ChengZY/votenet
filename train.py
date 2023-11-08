@@ -139,9 +139,9 @@ else:
     exit(-1)
 print(len(TRAIN_DATASET), len(TEST_DATASET))
 TRAIN_DATALOADER = DataLoader(TRAIN_DATASET, batch_size=BATCH_SIZE,
-    shuffle=True, num_workers=4, worker_init_fn=my_worker_init_fn)
+    shuffle=False, num_workers=4, worker_init_fn=my_worker_init_fn)
 TEST_DATALOADER = DataLoader(TEST_DATASET, batch_size=BATCH_SIZE,
-    shuffle=True, num_workers=4, worker_init_fn=my_worker_init_fn)
+    shuffle=False, num_workers=4, worker_init_fn=my_worker_init_fn)
 print(len(TRAIN_DATALOADER), len(TEST_DATALOADER))
 
 # Init the model and optimzier
@@ -149,14 +149,19 @@ MODEL = importlib.import_module(FLAGS.model) # import network module
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 num_input_channel = int(FLAGS.use_color)*3 + int(not FLAGS.no_height)*1
 
-net = MODEL.VoteNet(num_class=DATASET_CONFIG.num_class,
-                    num_heading_bin=DATASET_CONFIG.num_heading_bin,
-                    num_size_cluster=DATASET_CONFIG.num_size_cluster,
-                    mean_size_arr=DATASET_CONFIG.mean_size_arr,
-                    num_proposal=FLAGS.num_target,
-                    input_feature_dim=num_input_channel,
-                    vote_factor=FLAGS.vote_factor,
-                    sampling=FLAGS.cluster_sampling)
+if FLAGS.model == 'boxnet':
+    Detector = MODEL.BoxNet
+else:
+    Detector = MODEL.VoteNet
+
+net = Detector(num_class=DATASET_CONFIG.num_class,
+               num_heading_bin=DATASET_CONFIG.num_heading_bin,
+               num_size_cluster=DATASET_CONFIG.num_size_cluster,
+               mean_size_arr=DATASET_CONFIG.mean_size_arr,
+               num_proposal=FLAGS.num_target,
+               input_feature_dim=num_input_channel,
+               vote_factor=FLAGS.vote_factor,
+               sampling=FLAGS.cluster_sampling)
 
 if torch.cuda.device_count() > 1:
   log_string("Let's use %d GPUs!" % (torch.cuda.device_count()))
@@ -260,7 +265,8 @@ def evaluate_one_epoch():
         
         # Forward pass
         inputs = {'point_clouds': batch_data_label['point_clouds']}
-        end_points = net(inputs)
+        with torch.no_grad():
+            end_points = net(inputs)
 
         # Compute loss
         for key in batch_data_label:
@@ -292,7 +298,7 @@ def evaluate_one_epoch():
     metrics_dict = ap_calculator.compute_metrics()
     for key in metrics_dict:
         log_string('eval %s: %f'%(key, metrics_dict[key]))
-
+    
     mean_loss = stat_dict['loss']/float(batch_idx+1)
     return mean_loss
 
@@ -312,7 +318,11 @@ def train(start_epoch):
         np.random.seed()
         train_one_epoch()
         if EPOCH_CNT == 0 or EPOCH_CNT % 10 == 9: # Eval every 10 epochs
-            loss = evaluate_one_epoch()
+            try:
+                loss = evaluate_one_epoch()
+            except:
+                loss = loss
+                print('NaN in pred')
         # Save checkpoint
         save_dict = {'epoch': epoch+1, # after training one epoch, the start_epoch should be epoch+1
                     'optimizer_state_dict': optimizer.state_dict(),
