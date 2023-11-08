@@ -24,6 +24,7 @@ If you find our work useful in your research, please consider citing:
 ## Installation
 
 Install [Pytorch](https://pytorch.org/get-started/locally/) and [Tensorflow](https://github.com/tensorflow/tensorflow) (for TensorBoard). It is required that you have access to GPUs. Matlab is required to prepare data for SUN RGB-D. The code is tested with Ubuntu 22.04, Pytorch v1.12.0, TensorFlow v2.20, CUDA 11.3.
+refer to [Pytorch](https://github.com/facebookresearch/votenet/issues/108)
 
 Compile the CUDA layers for [PointNet++](http://arxiv.org/abs/1706.02413), which we used in the backbone network:
 
