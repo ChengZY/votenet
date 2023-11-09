@@ -95,6 +95,9 @@ To test the trained model with its checkpoint:
 
 Example results will be dumped in the `eval_scannet` folder (or any other folder you specify). In default we evaluate with both AP@0.25 and AP@0.5 with 3D IoU on axis aligned boxes.
 
+## To Do
+NaN in Eval
+
 ## Acknowledgements
 We want to thank Erik Wijmans for his PointNet++ implementation in Pytorch ([original codebase](https://github.com/erikwijmans/Pointnet2_PyTorch)).
 
