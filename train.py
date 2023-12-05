@@ -131,7 +131,7 @@ elif FLAGS.dataset == 'scannet':
     TRAIN_DATASET = ScannetDetectionDataset('train', num_points=NUM_POINT,
         augment=True,
         use_color=FLAGS.use_color, use_height=(not FLAGS.no_height))
-    TEST_DATASET = ScannetDetectionDataset('val', num_points=NUM_POINT,
+    TEST_DATASET = ScannetDetectionDataset('train', num_points=NUM_POINT,
         augment=False,
         use_color=FLAGS.use_color, use_height=(not FLAGS.no_height))
 else:
@@ -318,11 +318,7 @@ def train(start_epoch):
         np.random.seed()
         train_one_epoch()
         if EPOCH_CNT == 0 or EPOCH_CNT % 10 == 9: # Eval every 10 epochs
-            try:
-                loss = evaluate_one_epoch()
-            except:
-                loss = loss
-                print('NaN in pred')
+            loss = evaluate_one_epoch()
         # Save checkpoint
         save_dict = {'epoch': epoch+1, # after training one epoch, the start_epoch should be epoch+1
                     'optimizer_state_dict': optimizer.state_dict(),
