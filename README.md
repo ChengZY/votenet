@@ -35,9 +35,6 @@ Command '['ninja', '-v']' returned non-zero exit status 1
 将setup.py中的“cmdclass={'build_ext': BuildExtension}”这一行改为“cmdclass={'build_ext': BuildExtension.with_options(use_ninja=False)}”，pytorch默认使用ninjia作为backend，这里把它禁用掉就好了；
 
 网上有一些方法让将torch/utils/cpp_extension.py中的['ninja','-v']改成['ninja','--version']，这个方法或许可行，但修改系统文件是很危险的，不建议这么做
-————————————————
-版权声明：本文为CSDN博主「放屁带出翔丶」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
-原文链接：https://blog.csdn.net/fq9200/article/details/125362088
 
 To see if the compilation is successful, try to run `python models/votenet.py` to see if a forward pass works.
 
